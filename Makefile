@@ -20,6 +20,8 @@ migrate:
 
 fixtload:
 	@${CONSOLE} doctrine:fixtures:load
+fixture:
+	@${CONSOLE} make:fixture
 
 phpunit:
 	@${PHP} bin/phpunit

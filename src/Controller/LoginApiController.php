@@ -6,6 +6,7 @@ use App\DTO\UserDTO;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\RefreshToken;
 use JMS\Serializer\SerializerBuilder;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,6 +16,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
 
 use OpenApi\Annotations as OA;
 use Nelmio\ApiDocBundle\Annotation\Security as NelmioSecurity;
@@ -175,7 +177,8 @@ class LoginApiController extends AbstractController
         ValidatorInterface $validator,
         EntityManagerInterface $manager,
         UserPasswordHasherInterface $passwordHasher,
-        UserRepository $userRepository): Response
+        UserRepository $userRepository,
+        RefreshTokenManagerInterface $refreshTokenManager): Response
     {
         $serializer = SerializerBuilder::create()->build();
         $userDTO = $serializer->deserialize($request->getContent(), UserDTO::class, 'json');
@@ -196,7 +199,14 @@ class LoginApiController extends AbstractController
         $manager->persist($user);
         $manager->flush();
         $token = $JWTTokenManager->create($user);
-        return $this->json(['token' => $token, 'roles' => $user->getRoles()], Response::HTTP_CREATED);
+
+        $refreshToken = $refreshTokenManager->create();
+        $refreshToken->setUsername($user->getEmail());
+        $refreshToken->setRefreshToken();
+        $refreshToken->setValid((new \DateTime())->modify('+1 month'));
+        $refreshTokenManager->save($refreshToken);
+
+        return $this->json(['token' => $token, 'roles' => $user->getRoles(), 'refresh_token '=> $refreshToken->getRefreshToken()], Response::HTTP_CREATED);
     }
     /**
      *  @OA\Get(
@@ -270,6 +280,15 @@ class LoginApiController extends AbstractController
             ],
             Response::HTTP_OK
         );
+    }
+
+    /**
+     * @Route("/api/v1/token/refresh", name="refresh", methods={"POST"})
+     * ...
+     */
+    public function refresh(Request $request, RefreshToken $refreshService)
+    {
+        return $refreshService->refresh($request);
     }
 
 }

@@ -7,6 +7,10 @@ parameters:
 
 services:
     # default configuration for services in *this* file
+    Gesdinet\JWTRefreshTokenBundle\Service\RefreshToken:
+        alias: "gesdinet.jwtrefreshtoken"
+    Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface:
+        alias: "gesdinet.jwtrefreshtoken.refresh_token_manager"
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
