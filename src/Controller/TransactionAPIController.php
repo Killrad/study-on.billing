@@ -18,11 +18,11 @@ use Nelmio\ApiDocBundle\Annotation\Security as NelmioSecurity;
 class TransactionAPIController extends AbstractController
 {
     private const TYPE = [
-        'pay' => 0,
+        'payment' => 0,
         'deposit' => 1
     ];
     /**
-     * @OA\Post(
+     * @OA\GET(
      *     tags={"Transactions"},
      *     path="/api/v1/transactions/",
      *     summary="Список транзакций",
@@ -40,7 +40,6 @@ class TransactionAPIController extends AbstractController
         $filters['type'] = $request->query->get('type') ? self::TYPE[$request->query->get('type')] : null;
         $filters['course_code'] = $request->query->get('course_code');
         $filters['skip_expired'] = $request->query->get('skip_expired');
-
         $transactions = $transactionRepository->findUserTransactionsByFilters($this->getUser(), $filters);
         $outTransactions =[];
         foreach ($transactions as $transaction){

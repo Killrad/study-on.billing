@@ -41,24 +41,24 @@ class TransactionRepository extends ServiceEntityRepository
 
     public function findUserTransactionsByFilters($user, array $filters): array
     {
-        $query = $this->createQueryBuilder('transaction')
-            ->leftJoin('transaction.course', 'c')
-            ->andWhere('transaction.billing_user = :id')
+        $query = $this->createQueryBuilder('t')
+            ->leftJoin('t.Course', 'c')
+            ->andWhere('t.billing_user = :id')
             ->setParameter('id', $user->getId())
-            ->orderBy('transaction.Datetime_transaction', 'DESC');
+            ->orderBy('t.Datetime_transaction', 'DESC');
 
         if ($filters['type']) {
-            $query->andWhere('transaction.type = :type')
+            $query->andWhere('t.type = :type')
                 ->setParameter('type', $filters['type']);
         }
 
         if ($filters['course_code']) {
-            $query->andWhere('course.char_code = :char_code')
-                ->setParameter('char_code', $filters['course_code']);
+            $query->andWhere('c.char_code = :cc')
+                ->setParameter('cc', $filters['course_code']);
         }
 
         if ($filters['skip_expired']) {
-            $query->andWhere('transaction.End_datetime IS NULL OR transaction.End_datetime >= :today')
+            $query->andWhere('t.End_datetime IS NULL OR t.End_datetime >= :today')
                 ->setParameter('today', new \DateTimeImmutable());
         }
 
